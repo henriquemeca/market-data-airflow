@@ -2,11 +2,12 @@
 File with custom operator for loading zacks Rank data from the zacks website
 '''
 
-from typing import Any, Iterable
+import logging
+from typing import Any, Awaitable, Iterable
 
 from airflow.models import BaseOperator
 from airflow.utils.context import Context
-from helpers.zacks_rank_scrapper import ZacksTickerPage
+from helpers.zacks_rank_scrapper import StockRank, fetch_symbol_ranks
 
 
 class ZacksRankScrapper(BaseOperator):
@@ -15,11 +16,12 @@ class ZacksRankScrapper(BaseOperator):
     def __init__(self, task_id: str, ticker_list_path: str) -> None:
         self.task_id = task_id
         self.ticker_list_path = ticker_list_path
-        self.x = ZacksTickerPage
         super(BaseOperator, self).__init__()
 
     def execute(self, context: Context) -> Any:
-        stock_ranks = zr.fetch_symbol_ranks(self._get_ticker_list_from_csv())
+        tickers = self._get_ticker_list_from_csv()
+        stock_ranks = await fetch_symbol_ranks(tickers)
+        logging.log(stock_ranks)
 
     def _get_ticker_list_from_csv(self) -> Iterable[str]:
         '''
@@ -32,7 +34,7 @@ class ZacksRankScrapper(BaseOperator):
                     break
                 yield line.strip()
 
-    async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
+    async def fetch_symbol_ranks(self, symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
         '''
         Fetchs zacks data of a list of tickers
         '''

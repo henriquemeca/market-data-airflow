@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from enum import Enum
 from fractions import Fraction
 from html.parser import HTMLParser
-from typing import Any, Awaitable, NamedTuple, Tuple
+from typing import Any, Awaitable, List, NamedTuple, Tuple, Union
 
 import aiohttp
 
@@ -22,12 +22,12 @@ class ZacksTickerPage(HTMLParser):
     def __init__(self):
         super().__init__()
         self.scope_depth: int = 0
-        self.data: list[str] = []
+        self.data: List[str] = []
 
     def error(self, message: str) -> Any:
         '''Part of the HTLMParser ABC'''
 
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Union[str, None]]]) -> None:
         if tag == "p" and ("class", "rank_view") in attrs and self.scope_depth == 0:
             self.scope_depth = 1
         elif self.scope_depth > 0:
@@ -45,7 +45,7 @@ class ZacksTickerPage(HTMLParser):
 
     def result(self) -> list[str]:
         """Format a document into a list of line"""
-        lines: list[str] = []
+        lines: List[str] = []
         for line in "".join(self.data).split("\n"):
             stripped = line.strip()
             if stripped:
@@ -106,7 +106,7 @@ def extract_data(body: str) -> StockRank:
 
 async def get_symbol_data(
         session: aiohttp.ClientSession,
-        symbol: str) -> Tuple[str, StockRank | Exception]:
+        symbol: str) -> Tuple[str, Union[StockRank, Exception]]:
     '''Receives a ticker as a input and returns StockRank data'''
     try:
         url = f"https://www.zacks.com/stock/quote/{symbol}"
@@ -124,11 +124,11 @@ async def get_symbol_data(
         return (symbol, error)
 
 
-async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
+async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, Union[StockRank, Exception]]:
     '''
     Fetchs zacks data of a list of tickers
     '''
-    awaitables: list[Awaitable[tuple[str, StockRank | Exception]]] = []
+    awaitables: List[Awaitable[Tuple[str, Union[StockRank, Exception]]]] = []
     async with aiohttp.ClientSession() as session:
         for symbol in symbols:
             awaitables.append(get_symbol_data(session, symbol))
