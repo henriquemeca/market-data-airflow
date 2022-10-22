@@ -64,7 +64,6 @@ class Rank(Enum):
     F = 'F'
 
 
-@dataclass
 class StockRank(NamedTuple):
     """Ranks information about a stock"""
     zacks_rank: int
@@ -77,9 +76,6 @@ class StockRank(NamedTuple):
 
 
 def extract_data(body: str) -> StockRank:
-    """
-    Receives the body of a zacks rank page and returns a StockRank
-    dataclass with correpondent data"""
     parser = ZacksTickerPage()
     parser.feed(body)
     lines = parser.result()
@@ -97,38 +93,31 @@ def extract_data(body: str) -> StockRank:
         if match is None:
             raise RuntimeError(f"Subrank {key} was not found")
         subrank[key] = Rank(match[1])
-
     industry_match = re.search("Industry: (.*)", lines[3], re.I)
     industry = lines[3] if industry_match is None else industry_match[1]
-
     return StockRank(zacks_rank, industry_rank=lines[2], industry=industry, **subrank)
 
 
 async def get_symbol_data(
         session: aiohttp.ClientSession,
-        symbol: str) -> Tuple[str, Union[StockRank, Exception]]:
-    '''Receives a ticker as a input and returns StockRank data'''
+        symbol: str) -> tuple[str, StockRank | Exception]:
     try:
         url = f"https://www.zacks.com/stock/quote/{symbol}"
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
         }
-        # Slow, but nice to zack's servers
+        # Seja legal com o servidor não sendo tão eficiente
         await asyncio.sleep(random.random() * 50)
         async with session.get(url, headers=headers) as response:
             print(f"Status for {symbol}: {response.status}")
             extracted = extract_data(await response.text())
             return (symbol, extracted)
-    # this error will be saved in the output
-    except Exception as error:  # pylint: disable=W0703
+    except ValueError as error:
         return (symbol, error)
 
 
-async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, Union[StockRank, Exception]]:
-    '''
-    Fetchs zacks data of a list of tickers
-    '''
-    awaitables: List[Awaitable[Tuple[str, Union[StockRank, Exception]]]] = []
+async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
+    awaitables: list[Awaitable[tuple[str, StockRank | Exception]]] = []
     async with aiohttp.ClientSession() as session:
         for symbol in symbols:
             awaitables.append(get_symbol_data(session, symbol))
@@ -136,26 +125,32 @@ async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, Union[StockRan
     return dict(results)
 
 
+def generate_symbols(filename: str, ratio: Fraction = Fraction(1, 1)) -> Iterable[str]:
+    with open(filename, "r", encoding='utf-8') as file:
+        while True:
+            line = file.readline()
+            if not line:
+                break
+            sym = line.strip()
+            if hash(sym) % ratio.denominator < ratio.numerator:
+                yield line.strip()
+
+
+async def get_stock_rank(ticker_list: Iterable[str]) -> dict[str, Union[StockRank, Exception]]:
+    return await fetch_symbol_ranks(ticker_list)
+
+
 async def main() -> None:
-    '''
-    Implements the scrapping process for loading ticker zacks data
-    '''
-    # Fração para testar em subconjuntos de símbolos
-    # export PYTHONHASHSEED=algum número fixa o subconjunto
-    stock_ranks = await fetch_symbol_ranks(generate_symbols("lines.txt", Fraction(1, 100)))
-    with open("result.csv", mode="w", encoding='utf-8') as f:
+    stock_ranks = await get_stock_rank(
+        generate_symbols(r".\plugins\helpers\lines.txt", Fraction(100, 100)))
+    with open("result.csv", "w", encoding='utf-8') as f:
         f.write("sym\tzacks\tvalue\tgrowth\tmomtum\tvgm\tindustry\n")
         for (symbol, rank) in stock_ranks.items():
             if isinstance(rank, StockRank):
                 f.write(
-                    (f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t"
-                        + f"{rank.momentum}\t{rank.vgm}\t{rank.industry}\n"))
+                    f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t{rank.momentum}\t{rank.vgm}\t{rank.industry}\n")
             else:
                 f.write(f"{symbol}\t{rank!r}\n")
 
 if __name__ == "__main__":
     asyncio.run(main())
-    # with open("test.html", "r") as f:
-    #    print(extract_data(f.read()))
-
-# vim: ts=4:sw=4:et
