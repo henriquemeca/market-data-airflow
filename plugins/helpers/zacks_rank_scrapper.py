@@ -63,62 +63,82 @@ class Rank(Enum):
     E = 'E'
     F = 'F'
 
+    def __str__(self):
+        return self.name
+
 
 class StockRank(NamedTuple):
     """Ranks information about a stock"""
-    zacks_rank: int
-    value: Rank
-    growth: Rank
-    momentum: Rank
-    vgm: Rank
-    industry: str
-    industry_rank: str
+    zacks_rank: int | None
+    value: Rank | None
+    growth: Rank | None
+    momentum: Rank | None
+    vgm: Rank | None
+    industry: str | None
+    industry_rank: str | None
 
 
-def extract_data(body: str) -> StockRank:
+def extract_data(body: str, symbol: str) -> StockRank:
+    '''
+        Parses the data from zacks html into a StockRank object
+    '''
     parser = ZacksTickerPage()
     parser.feed(body)
     lines = parser.result()
-    if len(lines) < 4:
-        raise RuntimeError("Too little lines parsed")
 
-    zacks_match = re.search("[0-9]", lines[0])
+    try:
+        str_pattern = lines[0]
+    except IndexError:
+        return StockRank(*tuple([None]*7))
+
+    zacks_match = re.search("[0-9]", str_pattern)
     if zacks_match is None:
-        raise RuntimeError("Zacks rank was not found")
-    zacks_rank = int(zacks_match[0])
+        zacks_rank = None
+    else:
+        zacks_rank = int(zacks_match[0])
 
-    subrank: dict[str, Rank] = {}
+    subrank: dict[str, Union[Rank, None]] = {}
     for key in ["value", "growth", "momentum", "vgm"]:
         match = re.search("([A-F])\xa0" + key, lines[1], re.I)
         if match is None:
-            raise RuntimeError(f"Subrank {key} was not found")
-        subrank[key] = Rank(match[1])
-    industry_match = re.search("Industry: (.*)", lines[3], re.I)
-    industry = lines[3] if industry_match is None else industry_match[1]
+            subrank[key] = None
+        else:
+            subrank[key] = Rank(match[1])  # type: ignore
+    try:
+        industry_match = re.search("Industry: (.*)", lines[3], re.I)
+        industry = lines[3] if industry_match is None else industry_match[1]
+    except IndexError:
+        industry = None
     return StockRank(zacks_rank, industry_rank=lines[2], industry=industry, **subrank)
 
 
 async def get_symbol_data(
         session: aiohttp.ClientSession,
         symbol: str) -> tuple[str, StockRank | Exception]:
+    """
+        Loads html data from the zacks website
+    """
     try:
         url = f"https://www.zacks.com/stock/quote/{symbol}"
         headers = {
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
         }
         # Seja legal com o servidor não sendo tão eficiente
-        await asyncio.sleep(random.random() * 50)
+        await asyncio.sleep(random.random() * 500)
         async with session.get(url, headers=headers) as response:
             print(f"Status for {symbol}: {response.status}")
-            extracted = extract_data(await response.text())
+            extracted = extract_data(await response.text(), symbol)
             return (symbol, extracted)
-    except ValueError as error:
-        return (symbol, error)
+    except Exception as e:
+        return (symbol, e)
 
 
 async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
+    '''
+        Gets a list of tickers and returns their data, loaded async
+    '''
     awaitables: list[Awaitable[tuple[str, StockRank | Exception]]] = []
-    async with aiohttp.ClientSession() as session:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(100*60)) as session:
         for symbol in symbols:
             awaitables.append(get_symbol_data(session, symbol))
         results = await asyncio.gather(*awaitables)
@@ -126,6 +146,9 @@ async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Ex
 
 
 def generate_symbols(filename: str, ratio: Fraction = Fraction(1, 1)) -> Iterable[str]:
+    '''
+        Reads a file to generate a list of tickers
+    '''
     with open(filename, "r", encoding='utf-8') as file:
         while True:
             line = file.readline()
@@ -136,15 +159,14 @@ def generate_symbols(filename: str, ratio: Fraction = Fraction(1, 1)) -> Iterabl
                 yield line.strip()
 
 
-async def get_stock_rank(ticker_list: Iterable[str]) -> dict[str, Union[StockRank, Exception]]:
-    return await fetch_symbol_ranks(ticker_list)
-
-
 async def main() -> None:
-    stock_ranks = await get_stock_rank(
-        generate_symbols(r".\plugins\helpers\lines.txt", Fraction(100, 100)))
+    '''
+        Executes a script to test the scraper function
+    '''
+    stock_ranks = await fetch_symbol_ranks(
+        generate_symbols(r".\plugins\data\zacks_rank\choosenTickers.csv", Fraction(1, 500)))
     with open("result.csv", "w", encoding='utf-8') as f:
-        f.write("sym\tzacks\tvalue\tgrowth\tmomtum\tvgm\tindustry\n")
+        f.write("sym\tzacks\tvalue\tgrowth\tmomtum\tvgm\tindustry\date\n")
         for (symbol, rank) in stock_ranks.items():
             if isinstance(rank, StockRank):
                 f.write(
