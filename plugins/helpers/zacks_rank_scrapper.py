@@ -64,7 +64,7 @@ class Rank(Enum):
     F = 'F'
 
     def __str__(self):
-        return self.name
+        return self.value
 
 
 class StockRank(NamedTuple):
@@ -124,7 +124,7 @@ async def get_symbol_data(
             "User-Agent": "Mozilla/5.0 (X11; Linux x86_64; rv:95.0) Gecko/20100101 Firefox/95.0",
         }
         # Seja legal com o servidor não sendo tão eficiente
-        await asyncio.sleep(random.random() * 500)
+        await asyncio.sleep(random.random() * 5)
         async with session.get(url, headers=headers) as response:
             print(f"Status for {symbol}: {response.status}")
             extracted = extract_data(await response.text(), symbol)

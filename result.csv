@@ -1,11 +1,12 @@
-sym	zacks	value	growth	momtum	vgm	industry
-CCU	4	A	F	D	D	Beverages - Alcohol
-CDTX	3	F	B	C	D	Medical - Biomedical and Genetics
-ESCR	None	None	None	None	None	None
-INVA	1	A	D	C	B	Large Cap Pharmaceuticals
-ON	4	C	A	C	A	Semiconductor - Analog and Mixed
-RAFE	None	None	None	None	None	None
-RFMZ	None	None	None	None	None	None
-RNER	None	None	None	None	None	None
-SPGI	4	D	F	F	F	Business - Information Services
-WTRG	3	D	D	D	D	Utility - Water Supply
+sym	zacks	value	growth	momtum	vgm	industry\date
+ADAG	3	F	F	B	F	Medical - Biomedical and Genetics
+AOSL	5	B	D	F	C	Electronics - Semiconductors
+DECK	3	D	F	C	F	Shoes and Retail Apparel
+ESEA	3	A	A	C	A	Transportation - Shipping
+HALL	5	F	F	D	F	Insurance - Property and Casualty
+MUX	3	F	C	A	D	Mining - Miscellaneous
+PFGC	2	B	C	B	B	Food - Natural Foods Products
+SEMR	3	F	F	B	F	Internet - Software
+SYUS	None	None	None	None	None	None
+UTHR	2	B	B	A	A	Medical - Drugs
+XLC	None	None	None	None	None	None
