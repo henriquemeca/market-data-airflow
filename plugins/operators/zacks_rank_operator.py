@@ -1,44 +1,52 @@
 '''
-File with custom operator for loading zacks Rank data from the zacks website
+    File with custom operator for loading zacks Rank data from the zacks website
 '''
 
+import asyncio
+import csv
+import logging
+from datetime import datetime
 from typing import Any, Iterable
 
 from airflow.models import BaseOperator
 from airflow.utils.context import Context
-from helpers.zacks_rank_scrapper import ZacksTickerPage
+from helpers.zacks_rank_scrapper import StockRank, fetch_symbol_ranks
 
 
 class ZacksRankScrapper(BaseOperator):
     """Scrappes zacks rank data from a list of tickers"""
 
-    def __init__(self, task_id: str, ticker_list_path: str) -> None:
-        self.task_id = task_id
+    def __init__(self, ticker_list_path: str, results_path: str,  limit: int = -1, **kwargs: Any) -> None:
+        super().__init__(**kwargs)  # type: ignore
         self.ticker_list_path = ticker_list_path
-        self.x = ZacksTickerPage
-        super(BaseOperator, self).__init__()
+        self.results_path = results_path
+        self.limit = limit
 
     def execute(self, context: Context) -> Any:
-        stock_ranks = zr.fetch_symbol_ranks(self._get_ticker_list_from_csv())
+        asyncio.run(self.main())
 
-    def _get_ticker_list_from_csv(self) -> Iterable[str]:
+    def get_ticker_list_from_csv(self, limit: int = -1) -> Iterable[str]:
         '''
-        Get as ticker list from a file
+            Yields a list of ticker from a csv file
         '''
-        with open(self.ticker_list_path, mode="r", encoding='utf-8') as file:
-            while True:
-                line = file.readline()
-                if not line:
+        with open(self.ticker_list_path, "r", encoding='utf-8') as csvfile:
+            ticker_list = csv.reader(csvfile, delimiter=',')
+            for i, row in enumerate(ticker_list):
+                if limit == i:
                     break
-                yield line.strip()
+                yield row[0]
 
-    async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
+    async def main(self):
         '''
-        Fetchs zacks data of a list of tickers
+            Implements execute script from operator
         '''
-        awaitables: list[Awaitable[tuple[str, StockRank | Exception]]] = []
-        async with aiohttp.ClientSession() as session:
-            for symbol in symbols:
-                awaitables.append(get_symbol_data(session, symbol))
-            results = await asyncio.gather(*awaitables)
-        return dict(results)
+        ticker_data = await fetch_symbol_ranks(self.get_ticker_list_from_csv(self.limit))
+        today = datetime.today().strftime('%Y-%m-%d')
+        with open(f"{self.results_path}/{today}_zacks_data.csv", "w", encoding='utf-8') as f:
+            f.write("symbol\tzacks\tvalue\tgrowth\tmomtum\tvgm\tindustry\tdate\n")
+            for (symbol, rank) in ticker_data.items():
+                if isinstance(rank, StockRank):
+                    f.write(
+                        f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t{rank.momentum}\t{rank.vgm}\t{rank.industry}\t{today}\n")
+                else:
+                    f.write(f"{symbol}\t{rank!r}\n")

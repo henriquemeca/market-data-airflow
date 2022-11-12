@@ -1,4 +1,4 @@
-FROM apache/airflow:2.4.1
+FROM apache/airflow:latest-python3.10
 
 USER airflow
 COPY requirements.txt .

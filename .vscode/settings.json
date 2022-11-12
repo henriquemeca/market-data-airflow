@@ -1,8 +1,18 @@
 {
     "python.analysis.extraPaths": [
-        "${workspaceFolder}\\plugins"
+        "./plugins",
+        ".\\plugins"
     ],
-    "python.autoComplete.extraPaths": [
-        "${workspaceFolder}\\plugins"
+    "python.analysis.include": [
+        "./plugins",
+        ".\\plugins"
     ],
+    "pylint.args": [
+        "--good-names=f,i,e",
+        "--disable=import-error",
+        "--disable=pointless-statement"
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnusedExpression": "information",
+    }
 }

@@ -1,0 +1,33 @@
+'''
+    creates the zacks_rank dag
+'''
+from datetime import datetime
+
+from airflow.models import DAG
+from operators.zacks_rank_operator import ZacksRankScrapper
+
+SCHEDULE_INTERVAL = "5 0 * * *"
+START_DATE = datetime(2022, 10, 23)
+CATCHUP = False
+LIMIT: int = -1  # Limiting the number of tickers to be loaded from the list
+
+with DAG(
+    dag_id='zacks_rank',
+    description='Loads ticker data from a zacks website to specified destination',
+    schedule_interval=SCHEDULE_INTERVAL,
+    start_date=START_DATE,
+    catchup=CATCHUP,
+    doc_md='''
+        This dag was designed to receive read a list of tickers and scrap the corresponding zacks rank
+        data from https://www.zacks.com/ and load them in a specified path
+    ''',
+) as dag:
+
+    zacks_rank = ZacksRankScrapper(
+        task_id='zacks_rank_scrapper',
+        ticker_list_path="plugins/data/zacks_rank/choosenTickers.csv",
+        results_path='plugins/data/zacks_rank/results',
+        limit=LIMIT
+    )
+
+    zacks_rank
