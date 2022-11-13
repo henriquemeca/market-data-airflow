@@ -55,7 +55,7 @@ class ZacksRankScrapper(BaseOperator):
                     "momentum_score": str(rank.momentum),
                     "vgm_score": str(rank.vgm),
                     "industry": rank.industry,
-                    "reference_date": '2022-11-12',
+                    "reference_date": today,
                     "industry_rank_range": rank.industry_rank
                 }
                 ticker_list.append(parsed_dict)
