@@ -1,17 +1,17 @@
 '''
-    creates the zacks_rank dag
+    Creates a dag for scraping data daily and inserting into Bigquery
 '''
 from datetime import datetime
 
 from airflow.models import DAG
 from operators.zacks_rank_operator import ZacksRankScrapper
 
-# Dag parameters
+# Dag  default values
 SCHEDULE_INTERVAL = "5 0 * * *"
 START_DATE = datetime(2022, 10, 23)
 CATCHUP = False
 
-# Task parameters
+# Task parametes
 TICKER_LIST_PATH = "plugins/data/zacks_rank/choosenTickers.csv"
 PROJECT_ID = 'henrique-projects'
 DATASET_ID = 'zacks'

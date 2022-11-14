@@ -50,10 +50,10 @@ class ZacksRankScrapper(BaseOperator):
                 parsed_dict = {
                     "ticker": ticker,
                     "rank":	rank.zacks_rank,
-                    "value_score": str(rank.value),
-                    "growth_score": str(rank.growth),
-                    "momentum_score": str(rank.momentum),
-                    "vgm_score": str(rank.vgm),
+                    "value_score": _to_string(rank.value),
+                    "growth_score": _to_string(rank.growth),
+                    "momentum_score": _to_string(rank.momentum),
+                    "vgm_score": _to_string(rank.vgm),
                     "industry": rank.industry,
                     "reference_date": today,
                     "industry_rank_range": rank.industry_rank
@@ -83,6 +83,13 @@ class ZacksRankScrapper(BaseOperator):
                             f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t{rank.momentum}\t{rank.vgm}\t{rank.industry}\t{today}\n")
                     else:
                         f.write(f"{symbol}\t{rank!r}\n")
+
+
+def _to_string(data: Any):
+    '''
+        Converts objects to string if they are not None
+    '''
+    return str(data) if data is not None else data
 
 
 def get_ticker_list_from_csv(ticker_list_path: str, limit: int = -1) -> Iterable[str]:
