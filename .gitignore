@@ -3,7 +3,7 @@ logs/
 __pycache__/
 *.pyc
 .vscode/
-plugins/data/
+plugins/data/*
 creds.py
 result.csv
 henrique-projects-f436d0f5ba8a.json
