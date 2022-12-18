@@ -1,4 +1,4 @@
 aiohttp == 3.8.3
-google-cloud-bigquery == 3.3.5
+google-cloud-bigquery == 3.4
 apache-airflow-providers-google == 8.4.0
 pyspark == 3.3.1
