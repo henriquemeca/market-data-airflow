@@ -8,3 +8,5 @@ creds.py
 result.csv
 henrique-projects-f436d0f5ba8a.json
 .env
+.venv
+.vscode
