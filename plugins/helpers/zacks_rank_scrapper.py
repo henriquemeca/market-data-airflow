@@ -1,6 +1,6 @@
-'''
+"""
 Downlaods zacks ranks data using webscrapping
-'''
+"""
 import asyncio
 import random
 import re
@@ -25,9 +25,11 @@ class ZacksTickerPage(HTMLParser):
         self.data: List[str] = []
 
     def error(self, message: str) -> Any:
-        '''Part of the HTLMParser ABC'''
+        """Part of the HTLMParser ABC"""
 
-    def handle_starttag(self, tag: str, attrs: List[Tuple[str, Union[str, None]]]) -> None:
+    def handle_starttag(
+        self, tag: str, attrs: List[Tuple[str, Union[str, None]]]
+    ) -> None:
         if tag == "p" and ("class", "rank_view") in attrs and self.scope_depth == 0:
             self.scope_depth = 1
         elif self.scope_depth > 0:
@@ -56,12 +58,13 @@ class ZacksTickerPage(HTMLParser):
 @dataclass
 class Rank(Enum):
     """All zacs ranks options"""
-    A = 'A'
-    B = 'B'
-    C = 'C'
-    D = 'D'
-    E = 'E'
-    F = 'F'
+
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    E = "E"
+    F = "F"
 
     def __str__(self):
         return self.value
@@ -69,6 +72,7 @@ class Rank(Enum):
 
 class StockRank(NamedTuple):
     """Ranks information about a stock"""
+
     zacks_rank: int | None
     value: Rank | None
     growth: Rank | None
@@ -79,9 +83,9 @@ class StockRank(NamedTuple):
 
 
 def extract_data(body: str, symbol: str) -> StockRank:
-    '''
-        Parses the data from zacks html into a StockRank object
-    '''
+    """
+    Parses the data from zacks html into a StockRank object
+    """
     parser = ZacksTickerPage()
     parser.feed(body)
     lines = parser.result()
@@ -89,7 +93,7 @@ def extract_data(body: str, symbol: str) -> StockRank:
     try:
         str_pattern = lines[0]
     except IndexError:
-        return StockRank(*tuple([None]*7))
+        return StockRank(*tuple([None] * 7))
 
     zacks_match = re.search("[0-9]", str_pattern)
     if zacks_match is None:
@@ -113,10 +117,10 @@ def extract_data(body: str, symbol: str) -> StockRank:
 
 
 async def get_symbol_data(
-        session: aiohttp.ClientSession,
-        symbol: str) -> tuple[str, StockRank | Exception]:
+    session: aiohttp.ClientSession, symbol: str
+) -> Tuple[str, StockRank | Exception]:
     """
-        Loads html data from the zacks website
+    Loads html data from the zacks website
     """
     try:
         url = f"https://www.zacks.com/stock/quote/{symbol}"
@@ -133,12 +137,16 @@ async def get_symbol_data(
         return (symbol, e)
 
 
-async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Exception]:
-    '''
-        Gets a list of tickers and returns their data, loaded async
-    '''
+async def fetch_symbol_ranks(
+    symbols: Iterable[str],
+) -> dict[str, StockRank | Exception]:
+    """
+    Gets a list of tickers and returns their data, loaded async
+    """
     awaitables: list[Awaitable[tuple[str, StockRank | Exception]]] = []
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(100*60)) as session:
+    async with aiohttp.ClientSession(
+        timeout=aiohttp.ClientTimeout(100 * 60)
+    ) as session:
         for symbol in symbols:
             awaitables.append(get_symbol_data(session, symbol))
         results = await asyncio.gather(*awaitables)
@@ -146,10 +154,10 @@ async def fetch_symbol_ranks(symbols: Iterable[str]) -> dict[str, StockRank | Ex
 
 
 def generate_symbols(filename: str, ratio: Fraction = Fraction(1, 1)) -> Iterable[str]:
-    '''
-        Reads a file to generate a list of tickers
-    '''
-    with open(filename, "r", encoding='utf-8') as file:
+    """
+    Reads a file to generate a list of tickers
+    """
+    with open(filename, "r", encoding="utf-8") as file:
         while True:
             line = file.readline()
             if not line:
@@ -160,19 +168,24 @@ def generate_symbols(filename: str, ratio: Fraction = Fraction(1, 1)) -> Iterabl
 
 
 async def main() -> None:
-    '''
-        Executes a script to test the scraper function
-    '''
+    """
+    Executes a script to test the scraper function
+    """
     stock_ranks = await fetch_symbol_ranks(
-        generate_symbols(r".\plugins\data\zacks_rank\choosenTickers.csv", Fraction(1, 500)))
-    with open("result.csv", "w", encoding='utf-8') as f:
+        generate_symbols(
+            r".\plugins\data\zacks_rank\choosenTickers.csv", Fraction(1, 500)
+        )
+    )
+    with open("result.csv", "w", encoding="utf-8") as f:
         f.write("sym\tzacks\tvalue\tgrowth\tmomtum\tvgm\tindustry\date\n")
-        for (symbol, rank) in stock_ranks.items():
+        for symbol, rank in stock_ranks.items():
             if isinstance(rank, StockRank):
                 f.write(
-                    f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t{rank.momentum}\t{rank.vgm}\t{rank.industry}\n")
+                    f"{symbol}\t{rank.zacks_rank}\t{rank.value}\t{rank.growth}\t{rank.momentum}\t{rank.vgm}\t{rank.industry}\n"
+                )
             else:
                 f.write(f"{symbol}\t{rank!r}\n")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
