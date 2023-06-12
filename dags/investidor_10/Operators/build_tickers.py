@@ -7,7 +7,7 @@ import pandas as pd
 from google.cloud import storage
 from helpers.http_client.async_http_processor import AsyncHTTPProcessor
 from helpers.join_url import join_urls
-from investidor_10.Operators.helpers.definitions import (
+from investidor_10.Operators.utils.definitions import (
     B3_TICKERS_ID_PATH,
     HEADER,
     RAW_BUCKET,
