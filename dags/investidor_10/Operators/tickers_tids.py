@@ -14,7 +14,7 @@ from investidor_10.Operators.utils.definitions import (
 )
 
 
-class BuildTickers:
+class TickersIdsLoader:
     def __init__(self) -> None:
         self.tickers_url = "https://www.dadosdemercado.com.br/bolsa/acoes"
         self.url = "https://investidor10.com.br/acoes"
