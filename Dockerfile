@@ -1,4 +1,4 @@
-FROM apache/airflow:2.6.1-python3.10
+FROM apache/airflow:2.4.3-python3.9
 
 USER root
 
@@ -13,13 +13,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* 
 
 #Install GCloud[GCP] packages
-# RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list \
-#     && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/cloud.google.gpg \
-#     && apt-get update -y \
-#     && apt-get install google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y
-RUN curl -L -o "google-cloud-sdk.tar.gz" "https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-cli-434.0.0-darwin-arm.tar.gz?hl=pt-br" \ 
-    && tar -xzf "google-cloud-sdk.tar.gz" && ./google-cloud-sdk/install.sh --quiet 
-#&& ./google-cloud-sdk/bin/gcloud init --skip-diagnostics
+RUN echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" | tee -a /etc/apt/sources.list.d/google-cloud-sdk.list && curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | tee /usr/share/keyrings/cloud.google.gpg && apt-get update -y && apt-get install google-cloud-sdk google-cloud-sdk-gke-gcloud-auth-plugin kubectl -y
 
 USER airflow
 
@@ -34,4 +28,4 @@ ENV PATH=$PATH::/usr/local/gcloud/google-cloud-sdk/bin/
 
 COPY gcp_account.json .
 
-RUN ./google-cloud-sdk/bin/gcloud auth activate-service-account --key-file=gcp_account.json
+RUN gcloud auth activate-service-account --key-file=gcp_account.json
