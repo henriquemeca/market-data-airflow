@@ -59,9 +59,10 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=/opt/airflow/configs/henrique-projects-f436d0f5ba8a.json&extra__google_cloud_platform__scope=https://www.googleapis.com/auth/cloud-platform&extra__google_cloud_platform__project=henrique-projects&extra__google_cloud_platform__num_retries=5'
+    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=gcp_account.json&extra__google_cloud_platform__scope=henrique-projects&extra__google_cloud_platform__num_retries=5'
     NASDAQ_API_KEY: '${NASDAQ_API_KEY}'
     # Dags enviroment variables
+    DAGS_ROOT_DIR: 'dags/'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
