@@ -45,18 +45,21 @@ class BFFLoaderOperator(BaseOperator):
         self.url_sufix = url_sufix
         self.id = id
         self.raw_bucket = storage.Client().bucket(RAW_BUCKET)
-        self.destination_folder = destination_folder
+        self.destination_folder = join_urls(["investidor_10", destination_folder])
         self.timeout_seconds = timeout_seconds
         self.sleep_seconds = sleep_seconds
 
-    def execute(self):
+    def execute(self, **context):
         tickers = self.__read_tickers_from_gcs()
         tickers_urls = {
             ticker: join_urls([self.url, str(id), self.url_sufix])
             for ticker, id in tickers.items()
         }
-        logging.info("Tickers to be fetched: ", tickers_urls)
-        tickers_income = AsyncHTTPProcessor(
+        logging.info("Tickers to be fetched: ")
+        for ticker, url in tickers_urls.items():
+            logging.info(f"{ticker}:{url}")
+
+        tickers_data = AsyncHTTPProcessor(
             id_url_dict=tickers_urls,
             headers=HEADER,
             response_processor=self.__get_response_json,
@@ -65,7 +68,7 @@ class BFFLoaderOperator(BaseOperator):
         ).process()
 
         self.__load_json_responses_to_gcs(
-            responses=tickers_income,
+            responses=tickers_data,
             destination_folder=self.destination_folder,
             bucket=self.raw_bucket,
         )
@@ -79,12 +82,15 @@ class BFFLoaderOperator(BaseOperator):
         """
         tickers_df = pd.read_csv(f"gs://{RAW_BUCKET}/{B3_TICKERS_ID_PATH}")
         valid_tickers = tickers_df[tickers_df["ticker_id"] != -1]
-        return dict(zip(valid_tickers["ticker"], valid_tickers[self.id.value]))
+        return dict(zip(valid_tickers["ticker"], valid_tickers[self.id]))
 
     async def __get_response_json(
         self, id: str, response: aiohttp.ClientResponse
     ) -> Tuple[str, str]:
-        return (id, await response.text())
+        response_txt: str = await response.text()
+        if "<html" in response_txt:
+            raise ValueError(f"Reponse for the id:{id} output should not contain html")
+        return (id, response_txt)
 
     def __load_json_responses_to_gcs(
         self, responses: Dict[str, str], destination_folder: str, bucket: storage.Bucket

@@ -3,20 +3,40 @@ bff_configs:
   url: https://investidor10.com.br/api/cotacoes/acao/chart
   id: ticker
   url_sufix: 3650/true/real  # 10 years reading
-  destination_folder: investidor_10/ticker_prices
-- task_id: historical_prices
-  url: https://investidor10.com.br/api/cotacoes/acao/chart
-  id: ticker
-  url_sufix: 3650/true/real  # 10 years reading
-  destination_folder: investidor_10/ticker_prices
-- task_id: historical_prices
-  url: https://investidor10.com.br/api/cotacoes/acao/chart
-  id: ticker
-  url_sufix: 3650/true/real  # 10 years reading
-  destination_folder: investidor_10/ticker_prices
+  destination_folder: ticker_prices
 
+- task_id: net_income
+  url: https://investidor10.com.br/api/balancos/receitaliquida/chart/
+  id: company_id 
+  url_sufix: 3650/0
+  destination_folder: net_income
 
-class TickerIds(Enum):
-    TICKER = "ticker"
-    TICKER_ID = "ticker_id"
-    COMPANY_ID = "company_id"
+- task_id: assets_liabilities 
+  url: https://investidor10.com.br/api/balancos/ativospassivos/chart
+  id: company_id 
+  url_sufix: /3650
+  destination_folder: assets_liabilities
+
+- task_id: dividends
+  url: https://investidor10.com.br/api/dividendos/chart/
+  id: ticker
+  url_sufix: /3650/ano
+  destination_folder: dividends
+
+- task_id: dividend-yield
+  url: https://investidor10.com.br/api/dividend-yield/chart/
+  id: ticker
+  url_sufix: /3650/ano
+  destination_folder: dividend_yield
+
+- task_id: historical-kpis
+  url: https://investidor10.com.br/api/historico-indicadores/
+  id: ticker_id
+  url_sufix: /10
+  destination_folder: historic_kpis
+
+- task_id: prices_profit
+  url: https://investidor10.com.br/api/cotacao-lucro/
+  id: ticker
+  url_sufix: adjusted/
+  destination_folder: prices_profit

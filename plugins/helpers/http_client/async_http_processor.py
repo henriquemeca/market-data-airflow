@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 from typing import Any, Callable, Coroutine, Dict, List, Tuple
 
@@ -15,12 +16,14 @@ class AsyncHTTPProcessor:
         id_url_dict: Dict[str, str],
         headers: Dict[str, str],
         response_processor: response_processor_type,
+        retries=5,
         timeout_seconds: int = 10 * 60,
         sleep_seconds=random.random() * 10,
     ) -> None:
         self.headers = headers
         self.id_url_dict = id_url_dict
         self.response_processor = response_processor
+        self.retries = retries
         self.timeout_seconds = timeout_seconds
         self.sleep_seconds = sleep_seconds
 
@@ -52,5 +55,5 @@ class AsyncHTTPProcessor:
     ) -> Tuple[str, Any]:
         # Sleeping to not overload server
         await asyncio.sleep(self.sleep_seconds)
-        async with session.get(url, headers=self.headers) as response:
+        async with session.get(url=url, headers=self.headers) as response:
             return await self.response_processor(id, response)

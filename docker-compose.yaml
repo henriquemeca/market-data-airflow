@@ -63,6 +63,7 @@ x-airflow-common:
     NASDAQ_API_KEY: '${NASDAQ_API_KEY}'
     # Dags enviroment variables
     DAGS_ROOT_DIR: 'dags/'
+    GOOGLE_APPLICATION_CREDENTIALS: '/opt/airflow/gcp_account.json'
   volumes:
     - ./dags:/opt/airflow/dags
     - ./logs:/opt/airflow/logs
