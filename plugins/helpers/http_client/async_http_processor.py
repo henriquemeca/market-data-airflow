@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import random
 from typing import Any, Callable, Coroutine, Dict, List, Tuple
 
@@ -15,12 +16,14 @@ class AsyncHTTPProcessor:
         id_url_dict: Dict[str, str],
         headers: Dict[str, str],
         response_processor: response_processor_type,
+        retries=5,
         timeout_seconds: int = 10 * 60,
         sleep_seconds=random.random() * 10,
     ) -> None:
         self.headers = headers
         self.id_url_dict = id_url_dict
         self.response_processor = response_processor
+        self.retries = retries
         self.timeout_seconds = timeout_seconds
         self.sleep_seconds = sleep_seconds
 
@@ -35,7 +38,9 @@ class AsyncHTTPProcessor:
         ) as session:
             awaitables = []
             for id, url in self.id_url_dict.items():
-                processed_response = self.__process_response(
+                processed_response = await self.__retry(
+                    fun=self.__process_response,
+                    try_number=0,
                     session=session,
                     id=id,
                     url=url,
@@ -52,5 +57,24 @@ class AsyncHTTPProcessor:
     ) -> Tuple[str, Any]:
         # Sleeping to not overload server
         await asyncio.sleep(self.sleep_seconds)
-        async with session.get(url, headers=self.headers) as response:
+        async with session.get(url=url, headers=self.headers) as response:
             return await self.response_processor(id, response)
+
+    async def __retry(
+        self, fun: Callable, try_number: int, **kwargs
+    ) -> aiohttp.ClientResponse:
+        """Retry a function if it fails."""
+        try:
+            return fun(**kwargs)
+        except:
+            logging.error(
+                f"An erro was raised:, during the execution of function:{fun} with  arguments{kwargs}"
+            )
+            if try_number < self.retries:
+                await asyncio.sleep(self.sleep_seconds)
+                return await self.__retry(fun=fun, try_number=try_number + 1)
+            else:
+                logging.error(
+                    f"After {self.retries} attempts another error apeared while running function:{fun} with arguments:{kwargs}"
+                )
+                return Exception("any")
