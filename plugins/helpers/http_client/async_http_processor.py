@@ -38,9 +38,7 @@ class AsyncHTTPProcessor:
         ) as session:
             awaitables = []
             for id, url in self.id_url_dict.items():
-                processed_response = await self.__retry(
-                    fun=self.__process_response,
-                    try_number=0,
+                processed_response = self.__process_response(
                     session=session,
                     id=id,
                     url=url,
@@ -59,22 +57,3 @@ class AsyncHTTPProcessor:
         await asyncio.sleep(self.sleep_seconds)
         async with session.get(url=url, headers=self.headers) as response:
             return await self.response_processor(id, response)
-
-    async def __retry(
-        self, fun: Callable, try_number: int, **kwargs
-    ) -> aiohttp.ClientResponse:
-        """Retry a function if it fails."""
-        try:
-            return fun(**kwargs)
-        except:
-            logging.error(
-                f"An erro was raised:, during the execution of function:{fun} with  arguments{kwargs}"
-            )
-            if try_number < self.retries:
-                await asyncio.sleep(self.sleep_seconds)
-                return await self.__retry(fun=fun, try_number=try_number + 1)
-            else:
-                logging.error(
-                    f"After {self.retries} attempts another error apeared while running function:{fun} with arguments:{kwargs}"
-                )
-                return Exception("any")

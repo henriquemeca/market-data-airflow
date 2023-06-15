@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 
 from airflow.decorators import task
@@ -33,6 +33,8 @@ with DAG(
                 id=config["id"],
                 url_sufix=config["url_sufix"],
                 destination_folder=config["destination_folder"],
+                retries=5,
+                retry_delay=timedelta(minutes=2),
             )
         )
 
