@@ -46,8 +46,7 @@ x-airflow-common:
   #image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.4.1}
   &airflow-common
   build: .
-  environment:
-    &airflow-common-env
+  environment: &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
@@ -59,10 +58,18 @@ x-airflow-common:
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=gcp_account.json&extra__google_cloud_platform__scope=henrique-projects&extra__google_cloud_platform__num_retries=5'
-    NASDAQ_API_KEY: '${NASDAQ_API_KEY}'
+    # Airflow Connections
+    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: '{"conn_type": "google_cloud_platform", "extra": {"key_path": "gcp_account.json", "scope": "https://www.googleapis.com/auth/cloud-platform", "project": "henrique-projects", "num_retries": 5}}'
+    # Airflow variables
+    AIRFLOW_VAR_DATAPROC-GCP-REGION: 'us-east1'
+    AIRFLOW_VAR_DATAPROC-WORK-DIR: 'dataproc-work-dir'
+    AIRFLOW_VAR_RAW-LAYER: 'raw_data_layer'
+    AIRFLOW_VAR_CLEANED-LAYER: 'cleaned_data_layer'
+    AIRFLOW_VAR_GCP-PROJECT-ID: 'henrique-projects'
     # Dags enviroment variables
+    NASDAQ_API_KEY: '${NASDAQ_API_KEY}'
     DAGS_ROOT_DIR: 'dags/'
+    BQ_TEMP_BUCKET: 'bigquery-temporary-bucket'
     GOOGLE_APPLICATION_CREDENTIALS: '/opt/airflow/gcp_account.json'
   volumes:
     - ./dags:/opt/airflow/dags
@@ -71,8 +78,7 @@ x-airflow-common:
     - ./configs:/opt/airflow/configs
     - ./airflow.cfg:/opt/airflow/airflow.cfg
   user: "${AIRFLOW_UID:-50000}:0"
-  depends_on:
-    &airflow-common-depends-on
+  depends_on: &airflow-common-depends-on
     redis:
       condition: service_healthy
     postgres:

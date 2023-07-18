@@ -1,42 +1,42 @@
-bff_configs:
-- task_id: historical_prices
+bff-configs:
+- destination_folder: ticker_prices
   url: https://investidor10.com.br/api/cotacoes/acao/chart
   id: ticker
   url_sufix: 3650/true/real  # 10 years reading
-  destination_folder: ticker_prices
+  script: scripts/investidor10/default_cleaning.py
 
-- task_id: net_income
+- destination_folder: net_income
   url: https://investidor10.com.br/api/balancos/receitaliquida/chart/
   id: company_id 
   url_sufix: 3650/0
-  destination_folder: net_income
+  script: scripts/investidor10/default_cleaning.py
 
-- task_id: assets_liabilities 
+- destination_folder: assets_liabilities
   url: https://investidor10.com.br/api/balancos/ativospassivos/chart
   id: company_id 
   url_sufix: /3650
-  destination_folder: assets_liabilities
+  script: scripts/investidor10/default_cleaning.py
 
-- task_id: dividends
+- destination_folder: dividends
   url: https://investidor10.com.br/api/dividendos/chart/
   id: ticker
   url_sufix: /3650/ano
-  destination_folder: dividends
+  script: scripts/investidor10/default_cleaning.py
 
-- task_id: dividend-yield
+- destination_folder: dividend_yield
   url: https://investidor10.com.br/api/dividend-yield/chart/
   id: ticker
   url_sufix: /3650/ano
-  destination_folder: dividend_yield
+  script: scripts/investidor10/default_cleaning.py
 
-- task_id: historical-kpis
+- destination_folder: historic_kpis
   url: https://investidor10.com.br/api/historico-indicadores/
   id: ticker_id
   url_sufix: /10
-  destination_folder: historic_kpis
+  script: scripts/investidor10/historic_kpis_cleaning.py
 
-- task_id: prices_profit
+- destination_folder: prices_profit
   url: https://investidor10.com.br/api/cotacao-lucro/
   id: ticker
   url_sufix: adjusted/
-  destination_folder: prices_profit
+  script: scripts/investidor10/prices_profit_cleaning.py

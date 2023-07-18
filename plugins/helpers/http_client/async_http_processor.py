@@ -53,7 +53,21 @@ class AsyncHTTPProcessor:
         id: str,
         url: str,
     ) -> Tuple[str, Any]:
-        # Sleeping to not overload server
-        await asyncio.sleep(self.sleep_seconds)
-        async with session.get(url=url, headers=self.headers) as response:
-            return await self.response_processor(id, response)
+        """
+        Sends a get request and processes the reponse with the given process function
+        """
+        for attempt in range(self.retries):
+            # Sleeping to not overload server
+            try:
+                await asyncio.sleep(self.sleep_seconds)
+                async with session.get(url=url, headers=self.headers) as response:
+                    return await self.response_processor(id, response)
+            except Exception as e:
+                logging.warn(
+                    f"An error ocurred while trying to get the url:{url}. Error: {e}"
+                )
+                if attempt == self.retries - 1:
+                    logging.error(f"Reached max number retries")
+                    raise e
+                else:
+                    logging.info(f"Requesting again the url:{url}")

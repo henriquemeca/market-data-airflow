@@ -2,7 +2,7 @@ from argparse import ArgumentParser, Namespace
 from typing import List
 
 
-class ArgumentConiguration(object):
+class ArgumentConfiguration(object):
     """
     Parses arguments for configuring an ETL pipeline
     """

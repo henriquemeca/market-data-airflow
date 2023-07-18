@@ -73,13 +73,13 @@ class Rank(Enum):
 class StockRank(NamedTuple):
     """Ranks information about a stock"""
 
-    zacks_rank: int | None
-    value: Rank | None
-    growth: Rank | None
-    momentum: Rank | None
-    vgm: Rank | None
-    industry: str | None
-    industry_rank: str | None
+    zacks_rank: Union[int, None]
+    value: Union[Rank, None]
+    growth: Union[Rank, None]
+    momentum: Union[Rank, None]
+    vgm: Union[Rank, None]
+    industry: Union[str, None]
+    industry_rank: Union[str, None]
 
 
 def extract_data(body: str, symbol: str) -> StockRank:
@@ -118,7 +118,7 @@ def extract_data(body: str, symbol: str) -> StockRank:
 
 async def get_symbol_data(
     session: aiohttp.ClientSession, symbol: str
-) -> Tuple[str, StockRank | Exception]:
+) -> Tuple[str, Union[StockRank, Exception]]:
     """
     Loads html data from the zacks website
     """
@@ -139,7 +139,7 @@ async def get_symbol_data(
 
 async def fetch_symbol_ranks(
     symbols: Iterable[str],
-) -> dict[str, StockRank | Exception]:
+) -> dict[str, Union[StockRank, Exception]]:
     """
     Gets a list of tickers and returns their data, loaded async
     """

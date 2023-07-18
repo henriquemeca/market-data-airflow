@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 from typing import Dict, Tuple
@@ -87,14 +88,19 @@ class BFFLoaderOperator(BaseOperator):
     async def __get_response_json(
         self, id: str, response: aiohttp.ClientResponse
     ) -> Tuple[str, str]:
+        "Parses the url get response"
         response_txt: str = await response.text()
         if "<html" in response_txt:
             raise ValueError(f"Reponse for the id:{id} output should not contain html")
-        return (id, response_txt)
+        response_json = {}
+        response_json["ticker"] = id
+        response_json["data"] = json.loads(response_txt)
+        return (id, json.dumps(response_json))
 
     def __load_json_responses_to_gcs(
         self, responses: Dict[str, str], destination_folder: str, bucket: storage.Bucket
     ) -> None:
+        "Loads a list of files to GCS"
         for ticker, json_data in responses.items():
             destination_file = join_urls([destination_folder, f"{ticker}.json"])
             blob = bucket.blob(destination_file)
