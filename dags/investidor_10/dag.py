@@ -7,6 +7,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.google.cloud.operators.dataproc import (
     DataprocSubmitPySparkJobOperator,
 )
+from dataproc_operators import DataprocTasks
 from helpers.read_yaml_config import read_yaml_config
 from investidor_10.Operators.BFF_loader import BFFLoaderOperator
 from investidor_10.Operators.tickers_tids import TickersIdsLoader
@@ -19,8 +20,6 @@ from investidor_10.Operators.utils.definitions import (
     GCP_PROJECT_ID,
     RAW_BUCKET,
 )
-
-from scripts.spark.dataproc_operators import DataprocTasks
 
 config_yaml = read_yaml_config(f"{DAGS_ROOT_DIR}/investidor_10/config.yaml")
 jars = [
