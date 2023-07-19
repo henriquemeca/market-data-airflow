@@ -4,6 +4,8 @@ from spark.spark_client import spark_session
 
 
 class HistoricKpisCleaning:
+    """Class for processin investidor_10 historic_kpis data"""
+
     def __init__(self) -> None:
         self.config = ArgumentConfiguration(["raw_path", "cleaned_path"])
         self.raw_path = self.config.raw_path
@@ -12,6 +14,7 @@ class HistoricKpisCleaning:
     def execute(self) -> None:
         with spark_session(f"cleaned_{self.raw_path}") as spark:
             df = spark.read.option("multiline", "true").json(f"{self.raw_path}/*.json")
+            df = df.select("ticker", "data.*")
             df = clean_col_names(df)
             df = flatten_arrays_and_structs(df)
             df.write.mode("overwrite").parquet(self.cleaned_path)

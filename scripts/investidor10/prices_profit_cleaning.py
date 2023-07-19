@@ -9,6 +9,8 @@ from spark.spark_client import spark_session
 
 
 class PricesProfitCleaning:
+    """Class for processin investidor_10 prices_profit data"""
+
     def __init__(self) -> None:
         self.config = ArgumentConfiguration(["raw_path", "cleaned_path"])
         self.raw_path = self.config.raw_path
@@ -17,6 +19,7 @@ class PricesProfitCleaning:
     def execute(self) -> None:
         with spark_session(f"cleaned_{self.raw_path}") as spark:
             df = spark.read.option("multiline", "true").json(f"{self.raw_path}/*.json")
+            df = df.select("ticker", "data.*")
             df = clean_col_names(df)
             df = flatten_arrays_and_structs(df)
             df = self.__unpivot_kpis_columns(df)

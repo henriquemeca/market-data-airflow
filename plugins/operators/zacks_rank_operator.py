@@ -44,7 +44,7 @@ class ZacksRankScrapper(BaseOperator):
         Implements execute script from operator
         """
         ticker_data = await fetch_symbol_ranks(
-            get_ticker_list_from_csv(self.ticker_list_path, self.limit)
+            self.get_ticker_list_from_csv(self.ticker_list_path, self.limit)
         )
         today = datetime.today().strftime("%Y-%m-%d")
         ticker_list = []
@@ -53,10 +53,10 @@ class ZacksRankScrapper(BaseOperator):
                 parsed_dict = {
                     "ticker": ticker,
                     "rank": rank.zacks_rank,
-                    "value_score": _to_string(rank.value),
-                    "growth_score": _to_string(rank.growth),
-                    "momentum_score": _to_string(rank.momentum),
-                    "vgm_score": _to_string(rank.vgm),
+                    "value_score": self._to_string(rank.value),
+                    "growth_score": self._to_string(rank.growth),
+                    "momentum_score": self._to_string(rank.momentum),
+                    "vgm_score": self._to_string(rank.vgm),
                     "industry": rank.industry,
                     "reference_date": today,
                     "industry_rank_range": rank.industry_rank,
@@ -64,9 +64,6 @@ class ZacksRankScrapper(BaseOperator):
                 ticker_list.append(parsed_dict)
             else:
                 continue
-        print(self.project_id)
-        print(self.dataset_id)
-        print(self.table_id)
         BigQueryHook().insert_all(
             project_id=self.project_id,
             dataset_id=self.dataset_id,
@@ -89,21 +86,21 @@ class ZacksRankScrapper(BaseOperator):
                     else:
                         f.write(f"{symbol}\t{rank!r}\n")
 
+    def get_ticker_list_from_csv(
+        self, ticker_list_path: str, limit: int = -1
+    ) -> Iterable[str]:
+        """
+        Yields a list of ticker from a csv file
+        """
+        with open(ticker_list_path, "r", encoding="utf-8") as csvfile:
+            ticker_list = csv.reader(csvfile, delimiter=",")
+            for i, row in enumerate(ticker_list):
+                if limit == i:
+                    break
+                yield row[0]
 
-def _to_string(data: Any):
-    """
-    Converts objects to string if they are not None
-    """
-    return str(data) if data is not None else data
-
-
-def get_ticker_list_from_csv(ticker_list_path: str, limit: int = -1) -> Iterable[str]:
-    """
-    Yields a list of ticker from a csv file
-    """
-    with open(ticker_list_path, "r", encoding="utf-8") as csvfile:
-        ticker_list = csv.reader(csvfile, delimiter=",")
-        for i, row in enumerate(ticker_list):
-            if limit == i:
-                break
-            yield row[0]
+    def _to_string(self, data: Any):
+        """
+        Converts objects to string if they are not None
+        """
+        return str(data) if data is not None else data

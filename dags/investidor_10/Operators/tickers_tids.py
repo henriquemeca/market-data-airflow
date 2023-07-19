@@ -15,6 +15,12 @@ from investidor_10.Operators.utils.definitions import (
 
 
 class TickersIdsLoader:
+    """
+    Scrapes metadata about tickers from investidor 10 website
+    A ticker can have a system id or a company on the website and these indentifications
+    are used to query data from endpoints
+    """
+
     def __init__(self) -> None:
         self.tickers_url = "https://www.dadosdemercado.com.br/bolsa/acoes"
         self.url = "https://investidor10.com.br/acoes"
