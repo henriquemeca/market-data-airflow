@@ -10,6 +10,8 @@ from airflow.providers.google.cloud.operators.dataproc import (
 
 
 class DataprocTasks:
+    "This class configures airflow tasks to use the GCP dataproc service"
+
     def __init__(
         self,
         cluster_namme: str,
@@ -27,15 +29,15 @@ class DataprocTasks:
             self.cluster_config = {
                 "master_config": {
                     "num_instances": 1,
-                    "machine_type_uri": "n1-standard-2",
+                    "machine_type_uri": "n2-standard-2",
                     "disk_config": {
                         "boot_disk_type": "pd-standard",
-                        "boot_disk_size_gb": 1024,
+                        "boot_disk_size_gb": 512,
                     },
                 },
                 "worker_config": {
                     "num_instances": 2,
-                    "machine_type_uri": "n1-standard-2",
+                    "machine_type_uri": "n2-standard-2",
                     "disk_config": {
                         "boot_disk_type": "pd-standard",
                         "boot_disk_size_gb": 512,

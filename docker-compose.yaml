@@ -61,7 +61,7 @@ x-airflow-common:
     # Airflow Connections
     AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: '{"conn_type": "google_cloud_platform", "extra": {"key_path": "gcp_account.json", "scope": "https://www.googleapis.com/auth/cloud-platform", "project": "henrique-projects", "num_retries": 5}}'
     # Airflow variables
-    AIRFLOW_VAR_DATAPROC-GCP-REGION: 'us-east1'
+    AIRFLOW_VAR_DATAPROC-GCP-REGION: 'southamerica-west1'
     AIRFLOW_VAR_DATAPROC-WORK-DIR: 'dataproc-work-dir'
     AIRFLOW_VAR_RAW-LAYER: 'raw_data_layer'
     AIRFLOW_VAR_CLEANED-LAYER: 'cleaned_data_layer'

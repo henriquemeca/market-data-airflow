@@ -1,3 +1,4 @@
+# Configuration file for creating tasks in the investidor 10 DAG
 bff-configs:
 - destination_folder: ticker_prices
   url: https://investidor10.com.br/api/cotacoes/acao/chart

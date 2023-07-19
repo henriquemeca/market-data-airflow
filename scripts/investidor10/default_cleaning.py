@@ -7,6 +7,11 @@ from spark.spark_client import spark_session
 
 
 class DefaultCleaning:
+    """
+    Default processing function for investidor_10 data
+    The majority of investidor_10 data can be cleaned with this class execution
+    """
+
     def __init__(self) -> None:
         self.config = ArgumentConfiguration(["raw_path", "cleaned_path"])
         self.raw_path = self.config.raw_path
