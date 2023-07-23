@@ -17,6 +17,7 @@ class HistoricKpisCleaning:
             df = df.select("ticker", "data.*")
             df = clean_col_names(df)
             df = flatten_arrays_and_structs(df)
+            df = clean_col_names(df)
             df.write.mode("overwrite").parquet(self.cleaned_path)
 
 

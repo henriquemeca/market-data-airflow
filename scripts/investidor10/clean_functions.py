@@ -65,6 +65,7 @@ def __replace_invalid_characters(target_string: str) -> str:
         "/": "_",
         " ": "_",
         ".": "_",
+        "-": "_",
     }
     for invalid_char, valid_char in invalid_to_valid_characters.items():
         target_string = target_string.replace(invalid_char, valid_char)
