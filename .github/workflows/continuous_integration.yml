@@ -8,6 +8,8 @@ jobs:
     name: Load Scripts to Dataproc work dir bucket
     runs-on: ubuntu-latest
     steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2      
       - name: Install SQLFluff
         run: "pip install sqlfluff==2.3.4"
       - name: Lint models
