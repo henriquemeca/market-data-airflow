@@ -1,7 +1,7 @@
 SELECT
     '33ce2ffa-61f0-11ee-8c99-0242ac120002' AS id,
     'cdi' AS `name`,
-    'indice financeiro' AS type,
+    'indice financeiro' AS `type`,
     CAST(NULL AS INT) AS fund_id,
     CAST(NULL AS STRING) AS first_set,
     CAST(NULL AS STRING) AS second_set,
