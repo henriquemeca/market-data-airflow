@@ -1,0 +1,15 @@
+name: Continuous Deployment
+
+on:
+  pull_request:
+
+jobs:
+  lint-sql:
+    name: Load Scripts to Dataproc work dir bucket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SQLFluff
+        run: "pip install sqlfluff==2.3.4"
+      - name: Lint models
+        run: "sqlfluff lint --format github-annotation --annotation-level failure ."
+        
