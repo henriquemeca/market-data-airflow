@@ -35,3 +35,12 @@ jobs:
           cd ./scripts && find . -maxdepth 1 -mindepth 1 -type d -exec sh -c 'zip -r "{}.zip" "{}"' \; && cd ../..
           gsutil cp ./scripts/*.zip gs://${{ env.DATAPROC_BUCKET }}/pyfiles/
           gsutil -m rsync -d -r ./scripts/ gs://${{ env.DATAPROC_BUCKET }}/scripts/
+  lint-sql:
+    name: Load Scripts to Dataproc work dir bucket
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install SQLFluff
+        run: "pip install sqlfluff==2.3.4"
+      - name: Lint models
+        run: "sqlfluff lint --format github-annotation --annotation-level failure ."
+        
