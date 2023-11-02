@@ -13,5 +13,5 @@ jobs:
       - name: Install SQLFluff
         run: pip install sqlfluff==2.3.4
       - name: Lint models
-        run: sqlfluff lint . --format github-annotation --annotation-level failure --dialect bigquery
+        run: sqlfluff lint . --format github-annotation --annotation-level failure
         
